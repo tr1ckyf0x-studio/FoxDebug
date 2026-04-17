@@ -11,8 +11,8 @@ enum FeatureToggleFilter: String, CaseIterable {
 ///
 /// Supports search by display name and filtering by override status.
 struct FeatureToggleListView: View {
-    @ObservedObject var provider: FeatureToggleProvider
-    @ObservedObject var registry: FeatureFlagRegistry
+    var provider: FeatureToggleProvider
+    var registry: FeatureFlagRegistry
     let overrideStore: any FeatureToggleOverrideStore
 
     @State private var searchText = ""

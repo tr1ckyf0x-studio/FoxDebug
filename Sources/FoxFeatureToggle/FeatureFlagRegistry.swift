@@ -4,9 +4,10 @@ import SwiftUI
 ///
 /// Flags are registered at app startup from `@FeatureFlagContainer` enums.
 @MainActor
-public final class FeatureFlagRegistry: ObservableObject {
+@Observable
+public final class FeatureFlagRegistry {
     /// All registered feature flags.
-    @Published public private(set) var flags: [FeatureFlag] = []
+    public private(set) var flags: [FeatureFlag] = []
 
     public init() {}
 

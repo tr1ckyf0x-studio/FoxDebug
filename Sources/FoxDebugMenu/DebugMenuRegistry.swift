@@ -12,8 +12,9 @@ import SwiftUI
 /// registry.register(AnotherDebugSection())
 /// ```
 @MainActor
-public final class DebugMenuRegistry: ObservableObject {
-    @Published private(set) var sections: [AnyDebugSection] = []
+@Observable
+public final class DebugMenuRegistry {
+    private(set) var sections: [AnyDebugSection] = []
 
     public init() {}
 

@@ -4,7 +4,7 @@ import SwiftUI
 /// Displays a single feature flag with a 3-state override picker.
 struct FeatureToggleRowView: View {
     let flag: FeatureFlag
-    @ObservedObject var provider: FeatureToggleProvider
+    var provider: FeatureToggleProvider
     let overrideStore: any FeatureToggleOverrideStore
 
     @State private var currentOverride: FeatureFlagOverride
@@ -52,7 +52,7 @@ struct FeatureToggleRowView: View {
                 } else {
                     overrideStore.setOverride(newValue, for: flag)
                 }
-                provider.objectWillChange.send()
+                provider.notifyOverridesChanged()
             }
         }
         .padding(.vertical, 4)

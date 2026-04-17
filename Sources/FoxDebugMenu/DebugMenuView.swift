@@ -5,7 +5,7 @@ import SwiftUI
 /// Each section appears as a navigation link. Supports search by title.
 public struct DebugMenuView: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject private var registry: DebugMenuRegistry
+    private var registry: DebugMenuRegistry
     @State private var searchText = ""
 
     public init(registry: DebugMenuRegistry) {

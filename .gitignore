@@ -6,3 +6,6 @@ Package.resolved
 *.xcworkspace
 xcuserdata/
 DerivedData/
+
+# Demo/FoxDebugDemo.xcodeproj is generated from Demo/project.yml -- already covered by *.xcodeproj
+# above, noted here so nobody wonders where it went.

@@ -1,3 +1,4 @@
+import FoxDebugMenu
 import FoxFeatureToggle
 import SwiftUI
 
@@ -10,6 +11,9 @@ enum FeatureToggleFilter: String, CaseIterable {
 /// Displays all registered feature flags grouped by `FeatureFlagGroup`.
 ///
 /// Supports search by display name and filtering by override status.
+///
+/// The filter is pinned above the list through `safeAreaInset` rather than being the list's first
+/// row: it applies to everything below it, so it should not scroll away with the content it filters.
 struct FeatureToggleListView: View {
     var provider: FeatureToggleProvider
     var registry: FeatureFlagRegistry
@@ -19,35 +23,65 @@ struct FeatureToggleListView: View {
     @State private var filter: FeatureToggleFilter = .all
 
     var body: some View {
-        VStack(spacing: 0) {
-            TextField("Search flags...", text: $searchText)
-                .textFieldStyle(.roundedBorder)
-                .padding(.horizontal)
-                .padding(.top, 8)
-
-            List {
-                Picker("Filter", selection: $filter) {
-                    ForEach(FeatureToggleFilter.allCases, id: \.self) { filter in
-                        Text(filter.rawValue).tag(filter)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .listRowSeparator(.hidden)
-
-                ForEach(groupedFlags, id: \.group) { group in
-                    Section(group.group.rawValue) {
-                        ForEach(group.flags) { flag in
-                            FeatureToggleRowView(
-                                flag: flag,
-                                provider: provider,
-                                overrideStore: overrideStore
-                            )
-                        }
+        List {
+            ForEach(groupedFlags, id: \.group) { group in
+                Section(group.group.rawValue) {
+                    ForEach(group.flags) { flag in
+                        FeatureToggleRowView(
+                            flag: flag,
+                            provider: provider,
+                            overrideStore: overrideStore
+                        )
+                        .listRowBackground(Color.clear)
                     }
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.foxDebugBackground)
+        .toolbarBackground(Color.foxDebugBackground, for: .automatic)
         .navigationTitle("Feature Toggles")
+        .searchable(text: $searchText, prompt: Text("Search flags"))
+        .safeAreaInset(edge: .top, spacing: 0) {
+            filterPicker
+        }
+        .overlay {
+            if groupedFlags.isEmpty {
+                emptyState
+            }
+        }
+    }
+
+    private var filterPicker: some View {
+        Picker("Filter", selection: $filter) {
+            ForEach(FeatureToggleFilter.allCases, id: \.self) { filter in
+                Text(filter.rawValue).tag(filter)
+            }
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .padding(.horizontal)
+        .padding(.vertical, Metrics.filterVerticalPadding)
+        .background(Color.foxDebugBackground)
+    }
+
+    @ViewBuilder
+    private var emptyState: some View {
+        if !searchText.isEmpty {
+            ContentUnavailableView.search(text: searchText)
+        } else if filter == .overridden {
+            ContentUnavailableView(
+                "No Overrides",
+                systemImage: "flag.slash",
+                description: Text("Every flag is at its default value.")
+            )
+        } else {
+            ContentUnavailableView(
+                "No Feature Flags",
+                systemImage: "flag",
+                description: Text("Register them with FeatureFlagRegistry.register(_:).")
+            )
+        }
     }
 
     private var filteredFlags: [FeatureFlag] {
@@ -71,5 +105,9 @@ struct FeatureToggleListView: View {
         return grouped
             .map { (group: $0.key, flags: $0.value) }
             .sorted { $0.group.rawValue < $1.group.rawValue }
+    }
+
+    private enum Metrics {
+        static let filterVerticalPadding: CGFloat = 8
     }
 }

@@ -16,6 +16,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-syntax.git", "509.0.0" ..< "601.0.0-prerelease"),
+        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing.git", from: "1.17.0"),
     ],
     targets: [
         // MARK: - FoxDebugMenu
@@ -46,6 +47,16 @@ let package = Package(
         .testTarget(
             name: "FoxFeatureToggleTests",
             dependencies: ["FoxFeatureToggle"]
+        ),
+        .testTarget(
+            name: "FoxDebugUITests",
+            dependencies: [
+                "FoxDebugMenu",
+                "FoxFeatureToggle",
+                "FoxFeatureToggleUI",
+                .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+            ],
+            exclude: ["__Snapshots__"]
         ),
         .testTarget(
             name: "FoxFeatureToggleMacrosTests",

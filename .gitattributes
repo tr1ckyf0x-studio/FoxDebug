@@ -1,0 +1,3 @@
+# Snapshot references are binary and are rewritten wholesale whenever a view changes, so they go to
+# LFS rather than into the history. A dozen iPhone-sized PNGs already weigh about a megabyte.
+*.png filter=lfs diff=lfs merge=lfs -text

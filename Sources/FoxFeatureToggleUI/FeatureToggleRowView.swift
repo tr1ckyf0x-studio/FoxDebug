@@ -1,3 +1,4 @@
+import FoxDebugMenu
 import FoxFeatureToggle
 import SwiftUI
 
@@ -23,14 +24,11 @@ struct FeatureToggleRowView: View {
                     .font(.body)
 
                 if flag.stage == .development {
-                    Text("DEV")
-                        .font(.caption2)
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Color.orange.opacity(0.2))
-                        .foregroundColor(.orange)
-                        .cornerRadius(4)
+                    DebugBadge("DEV", color: .orange)
+                }
+
+                if provider.source(for: flag) == .remote {
+                    DebugBadge("REMOTE", color: .purple)
                 }
 
                 Spacer()

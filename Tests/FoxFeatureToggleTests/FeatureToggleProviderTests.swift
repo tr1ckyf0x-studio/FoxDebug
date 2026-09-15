@@ -1,4 +1,6 @@
 import Foundation
+import FoxRemoteConfig
+import Observation
 import Testing
 @testable import FoxFeatureToggle
 
@@ -56,24 +58,109 @@ struct FeatureToggleProviderTests {
     }
 
     @Test("Remote value applied when stage is .released")
-    func remoteValueAppliedForReleased() async {
+    func remoteValueAppliedForReleased() {
         let (sut, _) = makeSUT()
-        await sut.loadRemoteFlags(["released": true])
+        sut.applyRemoteConfig(RemoteConfig(flags: ["released": true]))
         #expect(sut.isEnabled(Self.releasedFlag) == true)
+        #expect(sut.source(for: Self.releasedFlag) == .remote)
+    }
+
+    @Test("Remote false turns off a flag whose default is true")
+    func remoteFalseOverridesDefaultTrue() {
+        let (sut, _) = makeSUT()
+        sut.applyRemoteConfig(RemoteConfig(flags: ["defaultTrue": false]))
+        #expect(sut.isEnabled(Self.defaultTrueFlag) == false)
     }
 
     @Test("Remote value IGNORED when stage is .development")
-    func remoteValueIgnoredForDevelopment() async {
+    func remoteValueIgnoredForDevelopment() {
         let (sut, _) = makeSUT()
-        await sut.loadRemoteFlags(["development": true])
+        sut.applyRemoteConfig(RemoteConfig(flags: ["development": true]))
         #expect(sut.isEnabled(Self.developmentFlag) == false)
+        #expect(sut.source(for: Self.developmentFlag) == .defaultValue)
     }
 
     @Test("Debug override takes priority over remote")
-    func overrideTakesPriorityOverRemote() async {
+    func overrideTakesPriorityOverRemote() {
         let (sut, store) = makeSUT()
-        await sut.loadRemoteFlags(["released": true])
+        sut.applyRemoteConfig(RemoteConfig(flags: ["released": true]))
         store.setOverride(.forceDisabled, for: Self.releasedFlag)
         #expect(sut.isEnabled(Self.releasedFlag) == false)
+        #expect(sut.source(for: Self.releasedFlag) == .override)
+    }
+
+    @Test("Override .defaultValue falls through to the remote value")
+    func defaultOverrideFallsThroughToRemote() {
+        let (sut, store) = makeSUT()
+        sut.applyRemoteConfig(RemoteConfig(flags: ["released": true]))
+        store.setOverride(.defaultValue, for: Self.releasedFlag)
+        #expect(sut.isEnabled(Self.releasedFlag) == true)
+        #expect(sut.source(for: Self.releasedFlag) == .remote)
+    }
+
+    @Test("Applying a config replaces earlier remote values instead of merging")
+    func applyReplaces() {
+        let (sut, _) = makeSUT()
+        sut.applyRemoteConfig(RemoteConfig(flags: ["released": true]))
+        sut.applyRemoteConfig(RemoteConfig(flags: ["defaultTrue": false]))
+        #expect(sut.isEnabled(Self.releasedFlag) == false)
+        #expect(sut.isEnabled(Self.defaultTrueFlag) == false)
+    }
+
+    @Test("Remote settings do not leak into flags with the same key")
+    func settingsDoNotLeak() {
+        let (sut, _) = makeSUT()
+        sut.applyRemoteConfig(RemoteConfig(settings: ["released": "true"]))
+        #expect(sut.isEnabled(Self.releasedFlag) == false)
+    }
+
+    @Test("Source is .override when forced and .defaultValue when nothing applies")
+    func sources() {
+        let (sut, store) = makeSUT()
+        #expect(sut.source(for: Self.releasedFlag) == .defaultValue)
+        store.setOverride(.forceEnabled, for: Self.releasedFlag)
+        #expect(sut.source(for: Self.releasedFlag) == .override)
+    }
+
+    @Test("Applying remote values notifies observers")
+    func applyNotifiesObservers() {
+        let (sut, _) = makeSUT()
+        let changed = ObservationFlag()
+        withObservationTracking {
+            _ = sut.isEnabled(Self.releasedFlag)
+        } onChange: {
+            changed.set()
+        }
+        sut.applyRemoteConfig(RemoteConfig(flags: ["released": true]))
+        #expect(changed.isSet)
+    }
+
+    @Test("Bootstrap feeds the provider its cached flags before run returns")
+    func bootstrapIntegration() {
+        let (sut, _) = makeSUT()
+        let defaults = UserDefaults(suiteName: "FoxFeatureToggleTests.\(UUID().uuidString)")!
+        let cache = UserDefaultsRemoteConfigCache(defaults: defaults)
+        cache.save(RemoteConfig(flags: ["released": true]))
+
+        RemoteConfigBootstrap(fetcher: NeverFetcher(), cache: cache, consumers: [sut]).run()
+
+        #expect(sut.isEnabled(Self.releasedFlag) == true)
+    }
+}
+
+private final class ObservationFlag: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value = false
+
+    var isSet: Bool { lock.withLock { value } }
+
+    func set() {
+        lock.withLock { value = true }
+    }
+}
+
+private struct NeverFetcher: RemoteConfigFetcher {
+    func fetch() async throws -> RemoteConfig {
+        throw CancellationError()
     }
 }

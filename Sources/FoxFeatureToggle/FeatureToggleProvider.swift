@@ -1,4 +1,15 @@
+import FoxRemoteConfig
 import SwiftUI
+
+/// Where a resolved flag value came from.
+public enum FeatureFlagSource: Sendable {
+    /// Forced on or off in the debug menu.
+    case override
+    /// Delivered remotely; only for `.released` flags.
+    case remote
+    /// Neither of the above.
+    case defaultValue
+}
 
 /// Default implementation of `ProvidesFeatureToggle`.
 ///
@@ -20,33 +31,15 @@ public final class FeatureToggleProvider: ProvidesFeatureToggle {
     }
 
     public func isEnabled(_ flag: FeatureFlag) -> Bool {
-        // Register observation dependency so that `notifyOverridesChanged()`
-        // invalidates views that read flag values.
-        _ = overrideRevision
-
-        // Priority 1: Debug override
-        if let override = overrideStore.override(for: flag) {
-            switch override {
-            case .forceEnabled:
-                return true
-            case .forceDisabled:
-                return false
-            case .defaultValue:
-                break
-            }
-        }
-
-        // Priority 2: Remote value (only for .released stage)
-        if flag.stage == .released, let remote = remoteValues[flag.key] {
-            return remote
-        }
-
-        // Priority 3: Default value
-        return flag.defaultValue
+        resolve(flag).isEnabled
     }
 
-    public func loadRemoteFlags(_ flags: [String: Bool]) async {
-        remoteValues = flags
+    public func source(for flag: FeatureFlag) -> FeatureFlagSource {
+        resolve(flag).source
+    }
+
+    public func applyRemoteConfig(_ config: RemoteConfig) {
+        remoteValues = config.flags
     }
 
     /// Notifies observers that external overrides have changed and cached
@@ -58,5 +51,26 @@ public final class FeatureToggleProvider: ProvidesFeatureToggle {
         // is safe and keeps the app from crashing in the (theoretical) case
         // of an extremely long-lived session with millions of toggles.
         overrideRevision &+= 1
+    }
+
+    private func resolve(_ flag: FeatureFlag) -> (isEnabled: Bool, source: FeatureFlagSource) {
+        // Register observation dependency so that `notifyOverridesChanged()`
+        // invalidates views that read flag values.
+        _ = overrideRevision
+
+        switch overrideStore.override(for: flag) {
+        case .forceEnabled:
+            return (true, .override)
+        case .forceDisabled:
+            return (false, .override)
+        case .defaultValue, nil:
+            break
+        }
+
+        if flag.stage == .released, let remote = remoteValues[flag.key] {
+            return (remote, .remote)
+        }
+
+        return (flag.defaultValue, .defaultValue)
     }
 }

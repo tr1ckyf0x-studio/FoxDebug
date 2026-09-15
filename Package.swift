@@ -13,6 +13,7 @@ let package = Package(
         .library(name: "FoxDebugMenu", targets: ["FoxDebugMenu"]),
         .library(name: "FoxFeatureToggle", targets: ["FoxFeatureToggle"]),
         .library(name: "FoxFeatureToggleUI", targets: ["FoxFeatureToggleUI"]),
+        .library(name: "FoxRemoteConfig", targets: ["FoxRemoteConfig"]),
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-syntax.git", "509.0.0" ..< "601.0.0-prerelease"),
@@ -25,8 +26,11 @@ let package = Package(
         // MARK: - FoxFeatureToggle
         .target(
             name: "FoxFeatureToggle",
-            dependencies: ["FoxDebugMacros"]
+            dependencies: ["FoxDebugMacros", "FoxRemoteConfig"]
         ),
+
+        // MARK: - FoxRemoteConfig
+        .target(name: "FoxRemoteConfig"),
 
         // MARK: - FoxFeatureToggleUI
         .target(
@@ -46,7 +50,11 @@ let package = Package(
         // MARK: - Tests
         .testTarget(
             name: "FoxFeatureToggleTests",
-            dependencies: ["FoxFeatureToggle"]
+            dependencies: ["FoxFeatureToggle", "FoxRemoteConfig"]
+        ),
+        .testTarget(
+            name: "FoxRemoteConfigTests",
+            dependencies: ["FoxRemoteConfig"]
         ),
         .testTarget(
             name: "FoxDebugUITests",

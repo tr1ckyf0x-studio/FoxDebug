@@ -25,7 +25,7 @@ let package = Package(
         // MARK: - FoxFeatureToggle
         .target(
             name: "FoxFeatureToggle",
-            dependencies: ["FoxFeatureToggleMacros"]
+            dependencies: ["FoxDebugMacros"]
         ),
 
         // MARK: - FoxFeatureToggleUI
@@ -34,9 +34,9 @@ let package = Package(
             dependencies: ["FoxFeatureToggle", "FoxDebugMenu"]
         ),
 
-        // MARK: - FoxFeatureToggleMacros
+        // MARK: - FoxDebugMacros
         .macro(
-            name: "FoxFeatureToggleMacros",
+            name: "FoxDebugMacros",
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
@@ -59,9 +59,9 @@ let package = Package(
             exclude: ["__Snapshots__"]
         ),
         .testTarget(
-            name: "FoxFeatureToggleMacrosTests",
+            name: "FoxDebugMacrosTests",
             dependencies: [
-                "FoxFeatureToggleMacros",
+                "FoxDebugMacros",
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
             ]
         ),

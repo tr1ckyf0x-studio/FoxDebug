@@ -2,7 +2,7 @@ import SwiftCompilerPlugin
 import SwiftSyntaxMacros
 
 @main
-struct FoxFeatureToggleMacrosPlugin: CompilerPlugin {
+struct FoxDebugMacrosPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         FeatureToggleMacro.self,
         FeatureFlagContainerMacro.self,

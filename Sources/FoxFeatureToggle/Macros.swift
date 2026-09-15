@@ -21,7 +21,7 @@ public macro FeatureToggle(
     group: FeatureFlagGroup,
     stage: FeatureFlagStage,
     defaultValue: Bool = false
-) = #externalMacro(module: "FoxFeatureToggleMacros", type: "FeatureToggleMacro")
+) = #externalMacro(module: "FoxDebugMacros", type: "FeatureToggleMacro")
 
 /// Generates a `static let all: [FeatureFlag]` property collecting all
 /// `@FeatureToggle`-annotated members in the type.
@@ -36,4 +36,4 @@ public macro FeatureToggle(
 /// // Generated: static let all: [FeatureFlag] = [concurrentScan]
 /// ```
 @attached(member, names: named(all))
-public macro FeatureFlagContainer() = #externalMacro(module: "FoxFeatureToggleMacros", type: "FeatureFlagContainerMacro")
+public macro FeatureFlagContainer() = #externalMacro(module: "FoxDebugMacros", type: "FeatureFlagContainerMacro")

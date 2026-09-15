@@ -2,12 +2,12 @@ import SwiftSyntaxMacros
 import SwiftSyntaxMacrosTestSupport
 import XCTest
 
-#if canImport(FoxFeatureToggleMacros)
-import FoxFeatureToggleMacros
+#if canImport(FoxDebugMacros)
+import FoxDebugMacros
 #endif
 
 final class FeatureToggleMacroTests: XCTestCase {
-    #if canImport(FoxFeatureToggleMacros)
+    #if canImport(FoxDebugMacros)
     private let testMacros: [String: Macro.Type] = [
         "FeatureToggle": FeatureToggleMacro.self,
     ]

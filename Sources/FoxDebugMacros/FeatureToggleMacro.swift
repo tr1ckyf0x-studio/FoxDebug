@@ -38,7 +38,7 @@ public struct FeatureToggleMacro: AccessorMacro {
         var message: String { rawValue }
 
         var diagnosticID: MessageID {
-            MessageID(domain: "FoxFeatureToggleMacros", id: rawValue)
+            MessageID(domain: "FoxDebugMacros", id: rawValue)
         }
     }
 

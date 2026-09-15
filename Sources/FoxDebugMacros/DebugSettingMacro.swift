@@ -28,8 +28,11 @@ public struct DebugSettingMacro: AccessorMacro {
 
     private enum DiagnosticMessage: String, SwiftDiagnostics.DiagnosticMessage {
         case requiresStaticVar = "@DebugSetting requires 'static var', not 'static let'"
+        case requiresStatic = "@DebugSetting requires a 'static var' inside a @DebugSettingContainer type"
         case requiresTypeAnnotation = "@DebugSetting requires an explicit 'DebugText' or 'DebugChoice<Option>' type"
         case requiresSingleBinding = "@DebugSetting requires a single property per declaration"
+        case choiceRequiresDefault = "@DebugSetting on a 'DebugChoice' requires 'defaultValue'"
+        case placeholderOnChoice = "'placeholder' applies only to 'DebugText'; a 'DebugChoice' shows a picker"
 
         var severity: DiagnosticSeverity { .error }
 
@@ -63,25 +66,69 @@ public struct DebugSettingMacro: AccessorMacro {
             return []
         }
 
-        guard let type = binding.typeAnnotation?.type.trimmed else {
+        guard varDecl.modifiers.contains(where: { [.keyword(.static), .keyword(.class)].contains($0.name.tokenKind) }) else {
+            context.diagnose(Diagnostic(node: Syntax(node), message: DiagnosticMessage.requiresStatic))
+            return []
+        }
+
+        // Checked on the syntax so a wrong or optional type is reported here, at the attribute, rather than
+        // as an unrelated initialiser error inside the expansion.
+        guard let type = binding.typeAnnotation?.type.trimmed,
+              let kind = SettingKind(type)
+        else {
             context.diagnose(Diagnostic(node: Syntax(node), message: DiagnosticMessage.requiresTypeAnnotation))
             return []
         }
 
-        let forwarded = node.arguments?.as(LabeledExprListSyntax.self)?
-            .map { $0.with(\.trailingComma, nil).trimmedDescription }
-            ?? []
-        // `text` keeps the backticks of an escaped name such as `default`; the key must not.
-        let key = pattern.identifier.text.filter { $0 != "`" }
-        let arguments = (["key: \"\(key)\""] + forwarded).joined(separator: ", ")
+        let arguments = node.arguments?.as(LabeledExprListSyntax.self).map(Array.init) ?? []
+        if kind == .choice {
+            if let placeholder = arguments.first(where: { $0.label?.text == "placeholder" }) {
+                context.diagnose(Diagnostic(node: Syntax(placeholder), message: DiagnosticMessage.placeholderOnChoice))
+                return []
+            }
+            guard arguments.contains(where: { $0.label?.text == "defaultValue" }) else {
+                context.diagnose(Diagnostic(node: Syntax(node), message: DiagnosticMessage.choiceRequiresDefault))
+                return []
+            }
+        }
+
+        let forwarded = arguments.map { $0.with(\.trailingComma, nil).trimmedDescription }
+        let key = pattern.identifier.unescapedText
+        let initialiserArguments = (["key: \"\(key)\""] + forwarded).joined(separator: ", ")
 
         let accessor: AccessorDeclSyntax =
             """
             get {
-                \(type)(\(raw: arguments))
+                \(type)(\(raw: initialiserArguments))
             }
             """
 
         return [accessor]
+    }
+
+    private enum SettingKind {
+        case text
+        case choice
+
+        /// Recognises `DebugText` and `DebugChoice<…>`, bare or module-qualified.
+        init?(_ type: TypeSyntax) {
+            let name: String
+            let hasGenericArgument: Bool
+            if let identifier = type.as(IdentifierTypeSyntax.self) {
+                name = identifier.name.text
+                hasGenericArgument = identifier.genericArgumentClause != nil
+            } else if let member = type.as(MemberTypeSyntax.self) {
+                name = member.name.text
+                hasGenericArgument = member.genericArgumentClause != nil
+            } else {
+                return nil
+            }
+
+            switch (name, hasGenericArgument) {
+            case ("DebugText", false): self = .text
+            case ("DebugChoice", true): self = .choice
+            default: return nil
+            }
+        }
     }
 }

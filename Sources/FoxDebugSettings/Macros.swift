@@ -21,10 +21,14 @@ public macro DebugSetting(
 /// ```swift
 /// @DebugSetting(displayName: "Stand", group: .network, defaultValue: Stand.production)
 /// static var stand: DebugChoice<Stand>
+///
+/// // Or name the option type on the attribute and write the default as an implicit member:
+/// @DebugSetting<Stand>(displayName: "Stand", group: .network, defaultValue: .production)
+/// static var stand: DebugChoice<Stand>
 /// ```
 ///
-/// - Important: Spell the default out with its type (`Stand.production`, not `.production`): macro
-///   arguments are type-checked before the declaration they are attached to is known.
+/// - Important: Macro arguments are type-checked before the property they are attached to is known, so
+///   `defaultValue: .production` alone has no type to resolve against — give it one of the two ways above.
 @attached(accessor)
 public macro DebugSetting<Option: DebugChoiceOption>(
     displayName: String,

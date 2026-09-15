@@ -57,6 +57,27 @@ final class FeatureFlagContainerMacroTests: XCTestCase {
         )
     }
 
+    func testCollectsModuleQualifiedAttribute() throws {
+        assertMacroExpansion(
+            """
+            @FeatureFlagContainer
+            enum Flags {
+                @FoxFeatureToggle.FeatureToggle(displayName: "A", group: .core, stage: .released)
+                static var first: FeatureFlag
+            }
+            """,
+            expandedSource: """
+            enum Flags {
+                @FoxFeatureToggle.FeatureToggle(displayName: "A", group: .core, stage: .released)
+                static var first: FeatureFlag
+
+                static let all: [FeatureFlag] = [first]
+            }
+            """,
+            macros: ["FeatureFlagContainer": FeatureFlagContainerMacro.self]
+        )
+    }
+
     func testEmptyContainerGeneratesEmptyAll() throws {
         assertMacroExpansion(
             """

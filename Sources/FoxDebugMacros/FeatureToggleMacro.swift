@@ -70,7 +70,7 @@ public struct FeatureToggleMacro: AccessorMacro {
             return []
         }
 
-        let propertyName = pattern.identifier.text
+        let propertyName = pattern.identifier.unescapedText
 
         // Extract macro arguments
         guard let arguments = node.arguments?.as(LabeledExprListSyntax.self) else {
@@ -87,11 +87,8 @@ public struct FeatureToggleMacro: AccessorMacro {
             let value = argument.expression.description.trimmingCharacters(in: .whitespaces)
             switch label {
             case "displayName":
-                // Strip surrounding quotes from the string literal
-                if let stringLiteral = argument.expression.as(StringLiteralExprSyntax.self),
-                   let segment = stringLiteral.segments.first?.as(StringSegmentSyntax.self) {
-                    displayNameExpr = segment.content.text
-                }
+                // Forwarded as written: re-quoting the literal's text lost interpolations and escapes.
+                displayNameExpr = argument.expression.trimmedDescription
             case "group":
                 groupExpr = value
             case "stage":
@@ -122,7 +119,7 @@ public struct FeatureToggleMacro: AccessorMacro {
             get {
                 FeatureFlag(
                     key: \(literal: propertyName),
-                    displayName: \(literal: displayName),
+                    displayName: \(raw: displayName),
                     group: \(raw: group),
                     stage: \(raw: stage),
                     defaultValue: \(raw: defaultValueExpr)

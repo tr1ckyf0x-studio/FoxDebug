@@ -58,6 +58,29 @@ final class FeatureToggleMacroTests: XCTestCase {
         )
     }
 
+    func testDisplayNameIsForwardedAsWritten() throws {
+        assertMacroExpansion(
+            #"""
+            @FeatureToggle(displayName: "Scan \(2) \"fast\"", group: .core, stage: .released)
+            static var `default`: FeatureFlag
+            """#,
+            expandedSource: #"""
+            static var `default`: FeatureFlag {
+                get {
+                    FeatureFlag(
+                        key: "default",
+                        displayName: "Scan \(2) \"fast\"",
+                        group: .core,
+                        stage: .released,
+                        defaultValue: false
+                    )
+                }
+            }
+            """#,
+            macros: testMacros
+        )
+    }
+
     func testDiagnosticOnStaticLet() throws {
         assertMacroExpansion(
             """

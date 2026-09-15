@@ -44,6 +44,15 @@ struct DebugSettingDefinitionTests {
         #expect(TestSettings.all.map(\.key) == ["stand", "customURL", "logLevel", "greeting"])
     }
 
+    @Test("The container collects #if-guarded members under the conditions that hold")
+    func containerHonoursConditions() {
+        #if DEBUG
+        #expect(ConditionalSettings.all.map(\.key) == ["always", "debugOnly"])
+        #else
+        #expect(ConditionalSettings.all.map(\.key) == ["always", "releaseOnly"])
+        #endif
+    }
+
     @Test("A choice accepts only its options; a text setting accepts anything")
     func accepts() {
         #expect(TestSettings.stand.descriptor.accepts("staging"))

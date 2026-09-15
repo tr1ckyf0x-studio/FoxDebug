@@ -37,6 +37,9 @@ targetTemplates:
           - FoxDebugMenu
           - FoxFeatureToggle
           - FoxFeatureToggleUI
+          - FoxDebugSettings
+          - FoxDebugSettingsUI
+          - FoxRemoteConfig
     scheme: {}
 
 targets:

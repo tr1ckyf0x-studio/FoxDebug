@@ -13,6 +13,8 @@ let package = Package(
         .library(name: "FoxDebugMenu", targets: ["FoxDebugMenu"]),
         .library(name: "FoxFeatureToggle", targets: ["FoxFeatureToggle"]),
         .library(name: "FoxFeatureToggleUI", targets: ["FoxFeatureToggleUI"]),
+        .library(name: "FoxDebugSettings", targets: ["FoxDebugSettings"]),
+        .library(name: "FoxDebugSettingsUI", targets: ["FoxDebugSettingsUI"]),
         .library(name: "FoxRemoteConfig", targets: ["FoxRemoteConfig"]),
     ],
     dependencies: [
@@ -29,6 +31,12 @@ let package = Package(
             dependencies: ["FoxDebugMacros", "FoxRemoteConfig"]
         ),
 
+        // MARK: - FoxDebugSettings
+        .target(
+            name: "FoxDebugSettings",
+            dependencies: ["FoxDebugMacros", "FoxRemoteConfig"]
+        ),
+
         // MARK: - FoxRemoteConfig
         .target(name: "FoxRemoteConfig"),
 
@@ -36,6 +44,12 @@ let package = Package(
         .target(
             name: "FoxFeatureToggleUI",
             dependencies: ["FoxFeatureToggle", "FoxDebugMenu"]
+        ),
+
+        // MARK: - FoxDebugSettingsUI
+        .target(
+            name: "FoxDebugSettingsUI",
+            dependencies: ["FoxDebugSettings", "FoxDebugMenu"]
         ),
 
         // MARK: - FoxDebugMacros
@@ -53,6 +67,10 @@ let package = Package(
             dependencies: ["FoxFeatureToggle", "FoxRemoteConfig"]
         ),
         .testTarget(
+            name: "FoxDebugSettingsTests",
+            dependencies: ["FoxDebugSettings", "FoxRemoteConfig"]
+        ),
+        .testTarget(
             name: "FoxRemoteConfigTests",
             dependencies: ["FoxRemoteConfig"]
         ),
@@ -62,6 +80,9 @@ let package = Package(
                 "FoxDebugMenu",
                 "FoxFeatureToggle",
                 "FoxFeatureToggleUI",
+                "FoxDebugSettings",
+                "FoxDebugSettingsUI",
+                "FoxRemoteConfig",
                 .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
             ],
             exclude: ["__Snapshots__"]

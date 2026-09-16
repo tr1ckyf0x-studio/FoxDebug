@@ -1,4 +1,5 @@
 import Foundation
+import FoxDebugStorage
 import os
 
 /// Storage for the values set in the debug menu. A stored value takes priority over remote and default.
@@ -12,13 +13,16 @@ public protocol DebugSettingStore: Sendable {
 }
 
 /// Default `DebugSettingStore` backed by `UserDefaults`, under the `FoxDebugSettings.value.` prefix.
-public final class UserDefaultsDebugSettingStore: DebugSettingStore, @unchecked Sendable {
+public struct UserDefaultsDebugSettingStore: DebugSettingStore {
     static let keyPrefix = "FoxDebugSettings.value."
-    private let defaults: UserDefaults
+    private let suite: UserDefaultsSuite
 
-    public init(defaults: UserDefaults = .standard) {
-        self.defaults = defaults
+    /// - Parameter suiteName: The `UserDefaults` suite to store values in; `nil` for the standard one.
+    public init(suiteName: String? = nil) {
+        suite = UserDefaultsSuite(name: suiteName)
     }
+
+    private var defaults: UserDefaults { suite.defaults }
 
     public func rawValue(forKey key: String) -> String? {
         defaults.string(forKey: Self.keyPrefix + key)

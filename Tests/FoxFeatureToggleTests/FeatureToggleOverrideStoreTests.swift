@@ -12,8 +12,7 @@ struct FeatureToggleOverrideStoreTests {
     )
 
     private func makeSUT() -> UserDefaultsFeatureToggleOverrideStore {
-        let defaults = UserDefaults(suiteName: "FoxFeatureToggleTests.\(UUID().uuidString)")!
-        return UserDefaultsFeatureToggleOverrideStore(defaults: defaults)
+        UserDefaultsFeatureToggleOverrideStore(suiteName: "FoxFeatureToggleTests.\(UUID().uuidString)")
     }
 
     @Test("Returns nil when no override is stored")
@@ -39,8 +38,9 @@ struct FeatureToggleOverrideStoreTests {
 
     @Test("Uses namespaced key prefix")
     func namespacedKeyPrefix() {
-        let defaults = UserDefaults(suiteName: "FoxFeatureToggleTests.\(UUID().uuidString)")!
-        let sut = UserDefaultsFeatureToggleOverrideStore(defaults: defaults)
+        let suiteName = "FoxFeatureToggleTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let sut = UserDefaultsFeatureToggleOverrideStore(suiteName: suiteName)
         sut.setOverride(.forceEnabled, for: testFlag)
         let storedValue = defaults.string(forKey: "FoxFeatureToggle.override.testFlag")
         #expect(storedValue == FeatureFlagOverride.forceEnabled.rawValue)

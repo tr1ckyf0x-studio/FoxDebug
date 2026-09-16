@@ -10,6 +10,7 @@ struct AnyDebugSection: Identifiable {
     let icon: Image
     private let _body: @MainActor () -> AnyView
 
+    @MainActor
     init<S: DebugSection>(_ section: S) {
         self.id = section.id
         self.title = section.title

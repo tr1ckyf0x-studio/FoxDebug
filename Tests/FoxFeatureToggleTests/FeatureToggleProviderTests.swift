@@ -1,6 +1,7 @@
 import Foundation
 import FoxRemoteConfig
 import Observation
+import os
 import Testing
 @testable import FoxFeatureToggle
 
@@ -23,8 +24,7 @@ struct FeatureToggleProviderTests {
     )
 
     private func makeSUT() -> (FeatureToggleProvider, UserDefaultsFeatureToggleOverrideStore) {
-        let defaults = UserDefaults(suiteName: "FoxFeatureToggleTests.\(UUID().uuidString)")!
-        let store = UserDefaultsFeatureToggleOverrideStore(defaults: defaults)
+        let store = UserDefaultsFeatureToggleOverrideStore(suiteName: "FoxFeatureToggleTests.\(UUID().uuidString)")
         let provider = FeatureToggleProvider(overrideStore: store)
         return (provider, store)
     }
@@ -138,8 +138,7 @@ struct FeatureToggleProviderTests {
     @Test("Bootstrap feeds the provider its cached flags before run returns")
     func bootstrapIntegration() {
         let (sut, _) = makeSUT()
-        let defaults = UserDefaults(suiteName: "FoxFeatureToggleTests.\(UUID().uuidString)")!
-        let cache = UserDefaultsRemoteConfigCache(defaults: defaults)
+        let cache = UserDefaultsRemoteConfigCache(suiteName: "FoxFeatureToggleTests.\(UUID().uuidString)")
         cache.save(RemoteConfig(flags: ["released": true]))
 
         RemoteConfigBootstrap(fetcher: NeverFetcher(), cache: cache, consumers: [sut]).run()
@@ -148,14 +147,13 @@ struct FeatureToggleProviderTests {
     }
 }
 
-private final class ObservationFlag: @unchecked Sendable {
-    private let lock = NSLock()
-    private var value = false
+private final class ObservationFlag: Sendable {
+    private let value = OSAllocatedUnfairLock(initialState: false)
 
-    var isSet: Bool { lock.withLock { value } }
+    var isSet: Bool { value.withLock { $0 } }
 
     func set() {
-        lock.withLock { value = true }
+        value.withLock { $0 = true }
     }
 }
 

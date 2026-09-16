@@ -1,5 +1,6 @@
 #if os(iOS)
 import FoxFeatureToggle
+import os
 @testable import FoxFeatureToggleUI
 import SwiftUI
 import XCTest
@@ -56,23 +57,23 @@ final class FeatureToggleListSnapshotTests: XCTestCase {
 
 /// Keeps overrides in memory so a snapshot never depends on what a previous run left in
 /// `UserDefaults`.
-private final class InMemoryOverrideStore: FeatureToggleOverrideStore, @unchecked Sendable {
-    private var overrides: [String: FeatureFlagOverride]
+private final class InMemoryOverrideStore: FeatureToggleOverrideStore {
+    private let overrides: OSAllocatedUnfairLock<[String: FeatureFlagOverride]>
 
     init(overrides: [String: FeatureFlagOverride]) {
-        self.overrides = overrides
+        self.overrides = OSAllocatedUnfairLock(initialState: overrides)
     }
 
     func override(for flag: FeatureFlag) -> FeatureFlagOverride? {
-        overrides[flag.key]
+        overrides.withLock { $0[flag.key] }
     }
 
     func setOverride(_ override: FeatureFlagOverride, for flag: FeatureFlag) {
-        overrides[flag.key] = override
+        overrides.withLock { $0[flag.key] = override }
     }
 
     func removeOverride(for flag: FeatureFlag) {
-        overrides[flag.key] = nil
+        overrides.withLock { $0[flag.key] = nil }
     }
 }
 #endif

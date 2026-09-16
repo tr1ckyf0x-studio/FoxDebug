@@ -96,11 +96,12 @@ struct DebugSettingRegistryTests {
 
 @Suite("DebugSettingStore")
 struct DebugSettingStoreTests {
-    private let defaults = UserDefaults(suiteName: "FoxDebugSettingsTests.\(UUID().uuidString)")!
+    private let suiteName = "FoxDebugSettingsTests.\(UUID().uuidString)"
+    private var defaults: UserDefaults { UserDefaults(suiteName: suiteName)! }
 
     @Test("UserDefaults store round-trips, removes and namespaces its keys")
     func userDefaults() {
-        let sut = UserDefaultsDebugSettingStore(defaults: defaults)
+        let sut = UserDefaultsDebugSettingStore(suiteName: suiteName)
         #expect(sut.rawValue(forKey: "stand") == nil)
 
         sut.setRawValue("staging", forKey: "stand")
@@ -114,8 +115,8 @@ struct DebugSettingStoreTests {
 
     @Test("Values persist across store instances over the same defaults")
     func persistence() {
-        UserDefaultsDebugSettingStore(defaults: defaults).setRawValue("x", forKey: "k")
-        #expect(UserDefaultsDebugSettingStore(defaults: defaults).rawValue(forKey: "k") == "x")
+        UserDefaultsDebugSettingStore(suiteName: suiteName).setRawValue("x", forKey: "k")
+        #expect(UserDefaultsDebugSettingStore(suiteName: suiteName).rawValue(forKey: "k") == "x")
     }
 
     @Test("In-memory store starts from its initial values and round-trips")

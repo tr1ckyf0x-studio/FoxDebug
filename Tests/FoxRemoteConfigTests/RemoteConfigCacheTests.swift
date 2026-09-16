@@ -4,10 +4,11 @@ import Testing
 
 @Suite("RemoteConfigCache")
 struct RemoteConfigCacheTests {
-    private let defaults = UserDefaults(suiteName: "FoxRemoteConfigTests.\(UUID().uuidString)")!
+    private let suiteName = "FoxRemoteConfigTests.\(UUID().uuidString)"
+    private var defaults: UserDefaults { UserDefaults(suiteName: suiteName)! }
 
     private func makeSUT() -> UserDefaultsRemoteConfigCache {
-        UserDefaultsRemoteConfigCache(defaults: defaults)
+        UserDefaultsRemoteConfigCache(suiteName: suiteName)
     }
 
     @Test("Returns an empty config when nothing is cached")

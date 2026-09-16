@@ -1,4 +1,5 @@
 import Foundation
+import FoxDebugStorage
 
 /// Persistent cache for remote values.
 ///
@@ -16,16 +17,19 @@ public protocol RemoteConfigCache: Sendable {
 }
 
 /// Default `RemoteConfigCache` backed by `UserDefaults`, storing the config as JSON.
-public final class UserDefaultsRemoteConfigCache: RemoteConfigCache, @unchecked Sendable {
+public struct UserDefaultsRemoteConfigCache: RemoteConfigCache {
     static let storageKey = "FoxRemoteConfig.cache"
     /// Where 2.x `UserDefaultsRemoteFlagsCache` kept flags. Read until the first save, so updating the
     /// package does not drop remote flags — a kill switch among them — for a session.
     static let legacyFlagsKey = "FoxFeatureToggle.remoteCache"
-    private let defaults: UserDefaults
+    private let suite: UserDefaultsSuite
 
-    public init(defaults: UserDefaults = .standard) {
-        self.defaults = defaults
+    /// - Parameter suiteName: The `UserDefaults` suite to cache in; `nil` for the standard one.
+    public init(suiteName: String? = nil) {
+        suite = UserDefaultsSuite(name: suiteName)
     }
+
+    private var defaults: UserDefaults { suite.defaults }
 
     public func load() -> RemoteConfig {
         if let data = defaults.data(forKey: Self.storageKey) {

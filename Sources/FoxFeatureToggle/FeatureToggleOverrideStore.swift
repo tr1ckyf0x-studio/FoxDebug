@@ -1,4 +1,5 @@
 import Foundation
+import FoxDebugStorage
 
 /// Storage for debug override values.
 ///
@@ -19,13 +20,16 @@ public protocol FeatureToggleOverrideStore: Sendable {
 ///
 /// Uses a namespaced key prefix (`FoxFeatureToggle.override.`) to avoid
 /// collisions with host app keys.
-public final class UserDefaultsFeatureToggleOverrideStore: FeatureToggleOverrideStore, @unchecked Sendable {
+public struct UserDefaultsFeatureToggleOverrideStore: FeatureToggleOverrideStore {
     private static let keyPrefix = "FoxFeatureToggle.override."
-    private let defaults: UserDefaults
+    private let suite: UserDefaultsSuite
 
-    public init(defaults: UserDefaults = .standard) {
-        self.defaults = defaults
+    /// - Parameter suiteName: The `UserDefaults` suite to store overrides in; `nil` for the standard one.
+    public init(suiteName: String? = nil) {
+        suite = UserDefaultsSuite(name: suiteName)
     }
+
+    private var defaults: UserDefaults { suite.defaults }
 
     public func override(for flag: FeatureFlag) -> FeatureFlagOverride? {
         guard let raw = defaults.string(forKey: Self.keyPrefix + flag.key) else {

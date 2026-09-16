@@ -43,9 +43,7 @@ import Testing
 @MainActor
 @Test("One-tap checkout shows when its flag is on")
 func oneTap() {
-    let store = UserDefaultsFeatureToggleOverrideStore(
-        defaults: UserDefaults(suiteName: "tests.\(UUID().uuidString)")!
-    )
+    let store = UserDefaultsFeatureToggleOverrideStore(suiteName: "tests.\(UUID().uuidString)")
     store.setOverride(.forceEnabled, for: CheckoutFlags.oneTap)
     let flags = FeatureToggleProvider(overrideStore: store)
 

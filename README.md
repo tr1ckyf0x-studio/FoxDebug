@@ -34,13 +34,13 @@ let stand = settings.value(NetworkSettings.stand)
 
 ## Requirements
 
-- Swift 5.10+ (Swift 6 language mode supported)
+- Swift 6.0+ (Xcode 16+); the package builds in the Swift 6 language mode
 - iOS 17+, macOS 14+
 
 ## Installation
 
 ```swift
-.package(url: "https://github.com/tr1ckyf0x-studio/FoxDebug.git", exact: "3.0.1")
+.package(url: "https://github.com/tr1ckyf0x-studio/FoxDebug.git", exact: "4.0.0")
 ```
 
 ## Documentation
@@ -54,6 +54,7 @@ let stand = settings.value(NetworkSettings.stand)
 | [Remote config](docs/remote-config.md) | Feed flags and settings from a backend |
 | [Testing](docs/testing.md) | Unit tests and previews with isolated stores |
 | [Recipes](docs/recipes.md) | Switching servers, keeping the menu out of production, feature modules |
+| [Migrating from 3.x](docs/migrating-from-3.md) | What 4.0.0 changed |
 | [Migrating from 2.x](docs/migrating-from-2.md) | What 3.0.0 changed |
 
 ## Demo

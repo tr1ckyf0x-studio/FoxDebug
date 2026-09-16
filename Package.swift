@@ -1,4 +1,4 @@
-// swift-tools-version: 5.10
+// swift-tools-version: 6.0
 
 import CompilerPluginSupport
 import PackageDescription
@@ -18,7 +18,7 @@ let package = Package(
         .library(name: "FoxRemoteConfig", targets: ["FoxRemoteConfig"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/swiftlang/swift-syntax.git", "509.0.0" ..< "601.0.0-prerelease"),
+        .package(url: "https://github.com/swiftlang/swift-syntax.git", "600.0.0" ..< "605.0.0"),
         .package(url: "https://github.com/pointfreeco/swift-snapshot-testing.git", from: "1.17.0"),
     ],
     targets: [
@@ -28,17 +28,24 @@ let package = Package(
         // MARK: - FoxFeatureToggle
         .target(
             name: "FoxFeatureToggle",
-            dependencies: ["FoxDebugMacros", "FoxRemoteConfig"]
+            dependencies: ["FoxDebugMacros", "FoxDebugStorage", "FoxRemoteConfig"]
         ),
 
         // MARK: - FoxDebugSettings
         .target(
             name: "FoxDebugSettings",
-            dependencies: ["FoxDebugMacros", "FoxRemoteConfig"]
+            dependencies: ["FoxDebugMacros", "FoxDebugStorage", "FoxRemoteConfig"]
         ),
 
         // MARK: - FoxRemoteConfig
-        .target(name: "FoxRemoteConfig"),
+        .target(
+            name: "FoxRemoteConfig",
+            dependencies: ["FoxDebugStorage"]
+        ),
+
+        // MARK: - FoxDebugStorage
+        // Not a product: shared by the stores through `package` access, invisible to host apps.
+        .target(name: "FoxDebugStorage"),
 
         // MARK: - FoxFeatureToggleUI
         .target(

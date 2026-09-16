@@ -111,6 +111,8 @@ struct DebugSettingRowView: View {
                     .font(.footnote)
             }
         }
+        // The label draws its own chevrons; macOS would add a second indicator beside them.
+        .menuIndicator(.hidden)
         .fixedSize()
     }
 

@@ -41,6 +41,10 @@ struct FeatureToggleListView: View {
         .background(Color.foxDebugBackground)
         .toolbarBackground(Color.foxDebugBackground, for: .automatic)
         .navigationTitle("Feature Toggles")
+        #if os(iOS)
+        // A top `safeAreaInset` on a List hides the large title and keeps its empty space; inline shows it.
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
         .searchable(text: $searchText, prompt: Text("Search flags"))
         .safeAreaInset(edge: .top, spacing: 0) {
             filterPicker

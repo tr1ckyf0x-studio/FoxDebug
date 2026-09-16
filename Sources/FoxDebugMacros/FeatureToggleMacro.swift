@@ -84,7 +84,7 @@ public struct FeatureToggleMacro: AccessorMacro {
 
         for argument in arguments {
             let label = argument.label?.text
-            let value = argument.expression.description.trimmingCharacters(in: .whitespaces)
+            let value = argument.expression.trimmedDescription
             switch label {
             case "displayName":
                 // Forwarded as written: re-quoting the literal's text lost interpolations and escapes.

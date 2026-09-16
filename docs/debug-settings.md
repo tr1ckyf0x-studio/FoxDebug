@@ -139,5 +139,9 @@ Most settings are worth reading **once at launch** — a base URL baked into a n
 level handed to a logger. Say so in the section's `footer`, so the person changing it knows to relaunch.
 Settings read at the point of use, like a timeout per request, apply immediately.
 
-In the menu, a picked option is saved at once. Typed text is saved on **Return** or when the field loses
+In the menu, a choice is a picker at the trailing edge of its row and a text setting is a field under
+its title. A picked option is saved at once. Typed text is saved on **Return** or when the field loses
 focus, never per keystroke, so half-typed values never reach the app.
+
+**Reset** removes the stored value. For a text setting it is a button beside the title; for a choice it
+is the last item of the picker's menu. Either appears only while a value is stored.

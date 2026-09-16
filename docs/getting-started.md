@@ -9,7 +9,7 @@ level. Both can also take values from a backend through **remote config**.
 In `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/tr1ckyf0x-studio/FoxDebug.git", exact: "3.0.0")
+.package(url: "https://github.com/tr1ckyf0x-studio/FoxDebug.git", exact: "3.0.1")
 ```
 
 Or in an XcodeGen `project.yml`:
@@ -18,7 +18,7 @@ Or in an XcodeGen `project.yml`:
 packages:
   FoxDebug:
     url: https://github.com/tr1ckyf0x-studio/FoxDebug.git
-    exactVersion: 3.0.0
+    exactVersion: 3.0.1
 ```
 
 Pick the products you use:

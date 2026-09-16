@@ -40,7 +40,7 @@ let stand = settings.value(NetworkSettings.stand)
 ## Installation
 
 ```swift
-.package(url: "https://github.com/tr1ckyf0x-studio/FoxDebug.git", exact: "3.0.0")
+.package(url: "https://github.com/tr1ckyf0x-studio/FoxDebug.git", exact: "3.0.1")
 ```
 
 ## Documentation

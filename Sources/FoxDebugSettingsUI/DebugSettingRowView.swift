@@ -26,25 +26,29 @@ struct DebugSettingRowView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Metrics.spacing) {
-            HStack {
-                Text(setting.displayName)
-                    .font(.body)
-                switch source {
-                case .local: DebugBadge("LOCAL", color: .blue)
-                case .remote: DebugBadge("REMOTE", color: .purple)
-                case .defaultValue: EmptyView()
+        Group {
+            switch setting.kind {
+            case let .text(placeholder):
+                // The field gets the row's full width: an address does not fit beside a title.
+                VStack(alignment: .leading, spacing: Metrics.spacing) {
+                    HStack {
+                        title
+                        Spacer()
+                        if hasStoredValue {
+                            Button("Reset", action: reset)
+                                .buttonStyle(.borderless)
+                                .font(.caption)
+                        }
+                    }
+                    textField(placeholder: placeholder)
                 }
-                Spacer()
-                // Keyed on the store rather than on `.local`: a stored option since removed from its enum
-                // resolves as a fallback, yet still needs a way out of the store.
-                if hasStoredValue {
-                    Button("Reset", action: reset)
-                        .buttonStyle(.borderless)
-                        .font(.caption)
+            case let .choice(options):
+                HStack {
+                    title
+                    Spacer()
+                    choiceMenu(options: options)
                 }
             }
-            control
         }
         .padding(.vertical, Metrics.verticalPadding)
         .onAppear {
@@ -54,32 +58,60 @@ struct DebugSettingRowView: View {
         }
     }
 
-    @ViewBuilder
-    private var control: some View {
-        switch setting.kind {
-        case let .text(placeholder):
-            TextField(placeholder, text: $draft)
-                .textFieldStyle(.roundedBorder)
-                .autocorrectionDisabled()
-                #if os(iOS)
-                .textInputAutocapitalization(.never)
-                #endif
-                .focused($isEditing)
-                .onSubmit(commit)
-                .onChange(of: isEditing) { _, isEditing in
-                    if !isEditing {
-                        commit()
-                    }
+    private var title: some View {
+        HStack {
+            Text(setting.displayName)
+                .font(.body)
+            switch source {
+            case .local: DebugBadge("LOCAL", color: .blue)
+            case .remote: DebugBadge("REMOTE", color: .purple)
+            case .defaultValue: EmptyView()
+            }
+        }
+    }
+
+    private func textField(placeholder: String) -> some View {
+        TextField(placeholder, text: $draft)
+            .textFieldStyle(.roundedBorder)
+            .autocorrectionDisabled()
+            #if os(iOS)
+            .textInputAutocapitalization(.never)
+            #endif
+            .focused($isEditing)
+            .onSubmit(commit)
+            .onChange(of: isEditing) { _, isEditing in
+                if !isEditing {
+                    commit()
                 }
-        case let .choice(options):
+            }
+    }
+
+    /// A menu rather than a bare menu-style `Picker`, so **Reset** can sit under the options: beside a
+    /// trailing picker there is no room for a button.
+    private func choiceMenu(options: [DebugSettingDescriptor.Option]) -> some View {
+        Menu {
             Picker(setting.displayName, selection: choiceBinding) {
                 ForEach(options, id: \.rawValue) { option in
                     Text(option.title).tag(option.rawValue)
                 }
             }
-            .pickerStyle(.menu)
+            .pickerStyle(.inline)
             .labelsHidden()
+
+            // Keyed on the store rather than on `.local`: a stored option since removed from its enum
+            // resolves as a fallback, yet still needs a way out of the store.
+            if hasStoredValue {
+                Divider()
+                Button("Reset", action: reset)
+            }
+        } label: {
+            HStack(spacing: Metrics.menuLabelSpacing) {
+                Text(options.first { $0.rawValue == draft }?.title ?? draft)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.footnote)
+            }
         }
+        .fixedSize()
     }
 
     private var choiceBinding: Binding<String> {
@@ -113,5 +145,6 @@ struct DebugSettingRowView: View {
     private enum Metrics {
         static let spacing: CGFloat = 8
         static let verticalPadding: CGFloat = 4
+        static let menuLabelSpacing: CGFloat = 4
     }
 }

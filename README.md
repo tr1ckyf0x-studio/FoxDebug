@@ -72,12 +72,25 @@ open Demo/FoxDebugDemo.xcodeproj
 swift test
 ```
 
-runs the logic and macro tests.
+runs everything on macOS: logic, macros, and the macOS snapshot tests.
 
 ```bash
 xcodebuild test -scheme FoxDebug-Package -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
-adds the snapshot tests. Their references live in Git LFS and are recorded on one simulator runtime;
-another runtime renders system chrome differently and fails them. After changing runtime, re-record
-with `TEST_RUNNER_SNAPSHOT_TESTING_RECORD=all` and review the images before committing.
+runs the same suites on iOS, snapshots included.
+
+Snapshot references live in Git LFS, one set per platform: `test….light.png` for iOS,
+`test….macOS-light.png` for macOS. They only match the environment that recorded them — the simulator
+runtime for iOS, the host macOS for AppKit — and are currently recorded on Xcode 27 and macOS 27. After
+changing either, re-record and review the images before committing:
+
+```bash
+SNAPSHOT_TESTING_RECORD=all swift test --filter FoxDebugUITests
+```
+
+```bash
+TEST_RUNNER_SNAPSHOT_TESTING_RECORD=all xcodebuild test -scheme FoxDebug-Package -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:FoxDebugUITests
+```
+
+Snapshot tests are not in CI yet — see [BACKLOG.md](BACKLOG.md).

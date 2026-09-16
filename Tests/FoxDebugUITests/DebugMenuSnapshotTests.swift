@@ -1,16 +1,14 @@
-#if os(iOS)
 import FoxDebugMenu
 import FoxFeatureToggle
 import FoxFeatureToggleUI
 import SwiftUI
 import XCTest
 
-/// Snapshots of the debug menu's own screens.
+/// Snapshots of the debug menu's own screens, on iOS and macOS.
 ///
-/// iOS only. The two platforms lay the same views out through different chrome — a navigation bar
-/// against a window toolbar — so a shared reference image is not possible, and AppKit rendering
-/// differs enough between OS releases that a macOS reference set costs more than it catches. The
-/// macOS build is covered by the demo app instead.
+/// Each platform has its own references: the same views lay out through different chrome — a navigation
+/// bar against a window toolbar. AppKit rendering also shifts between macOS releases, so macOS references
+/// only hold on the macOS they were recorded on.
 @MainActor
 final class DebugMenuSnapshotTests: XCTestCase {
     func testDebugMenuWithOneSection() {
@@ -34,4 +32,3 @@ private struct StubDebugSection: DebugSection {
         Text("Stub")
     }
 }
-#endif

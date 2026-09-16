@@ -1,4 +1,3 @@
-#if os(iOS)
 import FoxDebugSettings
 @testable import FoxDebugSettingsUI
 import FoxRemoteConfig
@@ -69,4 +68,3 @@ final class DebugSettingsListSnapshotTests: XCTestCase {
         }
     }
 }
-#endif

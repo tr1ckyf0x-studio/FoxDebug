@@ -1,4 +1,3 @@
-#if os(iOS)
 import FoxFeatureToggle
 import os
 @testable import FoxFeatureToggleUI
@@ -76,4 +75,3 @@ private final class InMemoryOverrideStore: FeatureToggleOverrideStore {
         overrides.withLock { $0[flag.key] = nil }
     }
 }
-#endif

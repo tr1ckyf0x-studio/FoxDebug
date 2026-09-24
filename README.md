@@ -94,3 +94,28 @@ TEST_RUNNER_SNAPSHOT_TESTING_RECORD=all xcodebuild test -scheme FoxDebug-Package
 ```
 
 Snapshot tests are not in CI yet — see [BACKLOG.md](BACKLOG.md).
+
+## Git LFS
+
+Snapshot references are stored in Git LFS, and `.lfsconfig` names the LFS server explicitly. SwiftPM
+does not check a package out from its origin: it creates a local mirror under
+`SourcePackages/repositories` and clones the working copy from that directory. The checkout's remote
+is then a path on disk, git-lfs derives no endpoint from it, and every object fails to smudge with
+`remote missing object`. That stays invisible on a machine whose mirror has accumulated the objects
+and is fatal on a clean one, which is what CI runs on. Naming the server keeps LFS working for
+anything consuming this package through SwiftPM.
+
+The cost falls on whoever pushes. An endpoint given in config carries no association with the SSH
+remote, so git-lfs can no longer get a token through `git-lfs-authenticate` and asks for a GitHub
+username instead. Point LFS back at SSH once per clone:
+
+```bash
+git config lfs.url ssh://git@github.com/tr1ckyf0x-studio/FoxDebug.git
+```
+
+If a prompt has already appeared, git-lfs will have recorded the fallback in the local config; clear
+that too:
+
+```bash
+git config --unset 'lfs.https://github.com/tr1ckyf0x-studio/FoxDebug.git/info/lfs.access'
+```

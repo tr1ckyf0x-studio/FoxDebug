@@ -1,0 +1,10 @@
+# SwiftPM does not check a package out from its origin. It first creates a local mirror under
+# SourcePackages/repositories and then clones the working copy from that directory, so the
+# checkout's remote is a path on disk and git-lfs derives no LFS endpoint from it: every object
+# fails to smudge with "remote missing object". That is invisible on a machine whose mirror has
+# accumulated the objects and fatal on a clean one, which is what CI runs on.
+#
+# Naming the server here overrides the derivation, so LFS keeps working for anything consuming
+# this package through SwiftPM. Update it if the repository ever moves.
+[lfs]
+	url = https://github.com/tr1ckyf0x-studio/FoxDebug.git/info/lfs
